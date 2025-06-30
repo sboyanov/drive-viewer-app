@@ -12,6 +12,7 @@ let gisInited = false;
  * It loads the Drive API client configuration (discovery doc).
  */
 function gapiLoaded() {
+  console.log('123');
   gapi.load('client', initializeGapiClient);
 }
 
