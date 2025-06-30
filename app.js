@@ -13,7 +13,7 @@ let gisInited = false;
  */
 function gapiLoaded() {
   console.log('123');
-  gapi.load('client', initializeGapiClient);
+  //gapi.load('client', initializeGapiClient);
 }
 
 /**
