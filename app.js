@@ -31,7 +31,7 @@ function iTokenClient () {
     callback: (tokenResponse) => {
       // Once the user authorizes, the token is passed here 123
       gapi.client.setToken(tokenResponse);
-      listFiles();
+      //listFiles();
     },
   });
   gisInited = true;
