@@ -1,4 +1,4 @@
-const CLIENT_ID = 'YOUR_CLIENT_ID_HERE';
+const CLIENT_ID = '862215580889-v7lu8b32b3rd6003butt1rjbtk0e9i2d.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
 function onGapiLoad() {
