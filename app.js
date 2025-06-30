@@ -18,10 +18,26 @@ function initializeGapiClient() {
     discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
   }).then(() => {
     gapiInited = true;
-    maybeEnableAuth();
+    //maybeEnableAuth();
+    iTokenClient ();
   });
 }
 
+function iTokenClient () {
+  console.log('OnLoad');
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (tokenResponse) => {
+      // Once the user authorizes, the token is passed here 123
+      gapi.client.setToken(tokenResponse);
+      updateStatus("Loading Drive files...");
+      listFiles();
+    },
+  });
+  gisInited = true;
+  maybeEnableAuth();
+/*
 window.onload = () => {
   console.log('OnLoad');
   tokenClient = google.accounts.oauth2.initTokenClient({
@@ -37,7 +53,7 @@ window.onload = () => {
   gisInited = true;
   maybeEnableAuth();
 };
-
+*/
 function maybeEnableAuth() {
   console.log('maybeEnableAuth');
   if (gapiInited && gisInited) {
