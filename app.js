@@ -4,9 +4,6 @@
     let tokenClient;
     let accessToken = null;
 
-    /**
-     * On load: Initialize Sign-In button and token client.
-     */
     window.onload = () => {
       // Render the embedded Sign-In button
       google.accounts.id.initialize({
@@ -41,11 +38,45 @@
      * After user selects account, request access token.
      * This does not reload or redirect.
      */
-    function handleIdToken(response) {
+  function handleIdToken(response) {
       // Optional: decode response.credential to inspect ID token.
       tokenClient.requestAccessToken(); // OAuth2 token for Drive API
-    }
+  }
     
+/**
+ * Lists all folders in the user's Google Drive.
+ */
+  function listDriveFolders() {
+    gapi.load('client', async () => {
+      await gapi.client.init({
+        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+      });
+
+      gapi.client.setToken({ access_token: accessToken });
+
+      const response = await gapi.client.drive.files.list({
+        q: "mimeType='application/vnd.google-apps.folder' and trashed = false",
+        fields: 'files(id, name)',
+        pageSize: 20
+      });
+
+      const folders = response.result.files;
+      const list = document.getElementById('file-list');
+      list.innerHTML = '';
+
+      if (!folders || folders.length === 0) {
+        list.innerHTML = '<li>No folders found.</li>';
+      } else {
+        folders.forEach(folder => {
+          const li = document.createElement('li');
+          li.textContent = `📁 ${folder.name} (${folder.id})`;
+          list.appendChild(li);
+        });
+      }
+    }); 
+  }
+
+
     /**
      * Loads Google Drive API and lists user's files.
      */
