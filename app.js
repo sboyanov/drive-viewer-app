@@ -45,7 +45,7 @@
       // Optional: decode response.credential to inspect ID token.
       tokenClient.requestAccessToken(); // OAuth2 token for Drive API
     }
-
+    
     /**
      * Loads Google Drive API and lists user's files.
      */
