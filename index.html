@@ -2,48 +2,118 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Google Drive App</title>
+  <title>Google Drive Integration</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Google Identity Services (GIS) -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="app.js"></script>
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      background: #f7f9fb;
+      padding: 20px;
     }
-    .top-bar {
-      background-color: #1a73e8;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      font-size: 20px;
-      position: sticky;
-      top: 0;
+    #login-div {
+      margin-top: 50px;
     }
-    .login-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 40px;
-    }
-    #g_id_signin {
-      display: inline-block;
-    }
-    #user-info {
+    #content {
+      display: none;
       margin-top: 30px;
-      text-align: center;
-      font-size: 18px;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    Google Drive App
+  <h1>Google Drive App</h1>
+  <div id="login-div"></div>
+  <div id="content">
+    <p>You're signed in.</p>
+    <button onclick="listDriveFiles()">List My Drive Files</button>
+    <ul id="file-list"></ul>
   </div>
-  <div class="login-container">
-    <div id="g_id_signin"></div>
-  </div>
-  <div id="user-info"></div>
+
+  <!-- Google Identity Services (modern Google Sign-In) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Google API Client for Drive -->
+  <script src="https://apis.google.com/js/api.js" async defer></script>
+
+  <script>
+    const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'; // Replace with your actual client ID
+    const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly';
+
+    let tokenClient;
+    let accessToken = null;
+
+    /**
+     * Initialize the Google Identity Services client.
+     */
+    window.onload = () => {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (tokenResponse) => {
+          if (tokenResponse.error) {
+            console.error(tokenResponse);
+            return;
+          }
+          accessToken = tokenResponse.access_token;
+          document.getElementById('login-div').style.display = 'none';
+          document.getElementById('content').style.display = 'block';
+        },
+      });
+
+      // Render the Sign-In button
+      google.accounts.id.initialize({
+        client_id: CLIENT_ID,
+        callback: handleCredentialResponse
+      });
+
+      google.accounts.id.renderButton(
+        document.getElementById('login-div'),
+        { theme: 'outline', size: 'large' }
+      );
+    };
+
+    /**
+     * Handles credential response from Google Sign-In button.
+     * Triggers OAuth2 token request.
+     */
+    function handleCredentialResponse(response) {
+      // Optional: decode ID token to get user info
+      tokenClient.requestAccessToken();
+    }
+
+    /**
+     * Loads the Google Drive API client library and lists files.
+     */
+    function listDriveFiles() {
+      gapi.load('client', async () => {
+        await gapi.client.init({
+          apiKey: '', // Optional if you're only using OAuth2
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+        });
+
+        gapi.client.setToken({ access_token: accessToken });
+
+        const response = await gapi.client.drive.files.list({
+          pageSize: 10,
+          fields: 'files(id, name)',
+        });
+
+        const files = response.result.files;
+        const list = document.getElementById('file-list');
+        list.innerHTML = '';
+
+        if (!files || files.length === 0) {
+          list.innerHTML = '<li>No files found.</li>';
+        } else {
+          files.forEach(file => {
+            const li = document.createElement('li');
+            li.textContent = `${file.name} (${file.id})`;
+            list.appendChild(li);
+          });
+        }
+      });
+    }
+  </script>
 </body>
 </html>
