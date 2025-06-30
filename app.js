@@ -42,7 +42,21 @@
       // Optional: decode response.credential to inspect ID token.
       tokenClient.requestAccessToken(); // OAuth2 token for Drive API
   }
+  /*
+  function getSpecificFolder () {
+    gapi.load('client', async () => {
+      await gapi.client.init({
+        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+      });
     
+    gapi.client.setToken({ access_token: accessToken });
+    const response = await gapi.client.drive.files.list({
+        q: "mimeType='application/vnd.google-apps.folder' and trashed = false and spaces='drive'",
+        fields: 'files(id, name)',
+        pageSize: 20
+      });    
+  }
+      */
 /**
  * Lists all folders in the user's Google Drive.
  */
@@ -55,7 +69,7 @@
       gapi.client.setToken({ access_token: accessToken });
 
       const response = await gapi.client.drive.files.list({
-        q: "mimeType='application/vnd.google-apps.folder' and trashed = false",
+        q: "mimeType='application/vnd.google-apps.folder' and trashed = false and spaces='drive'",
         fields: 'files(id, name)',
         pageSize: 20
       });
@@ -76,10 +90,9 @@
     }); 
   }
 
-
     /**
      * Loads Google Drive API and lists user's files.
-     */
+    
     function listDriveFiles() {
       gapi.load('client', async () => {
         await gapi.client.init({
@@ -107,4 +120,4 @@
           });
         }
       });
-    }
+    } */
