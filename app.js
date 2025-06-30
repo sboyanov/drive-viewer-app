@@ -18,7 +18,6 @@ function initializeGapiClient() {
     discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
   }).then(() => {
     gapiInited = true;
-    //maybeEnableAuth();
     function onload();
   });
 }
