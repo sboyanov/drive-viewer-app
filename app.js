@@ -28,7 +28,7 @@ window.onload = () => {
     client_id: CLIENT_ID,
     scope: SCOPES,
     callback: (tokenResponse) => {
-      // Once the user authorizes, the token is passed here
+      // Once the user authorizes, the token is passed here 123
       gapi.client.setToken(tokenResponse);
       updateStatus("Loading Drive files...");
       listFiles();
