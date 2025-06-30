@@ -41,3 +41,7 @@ li.folder-item {
 li.folder-item span {
   user-select: none;
 }
+
+li.folder-item span:hover {
+  text-decoration: underline;
+}
