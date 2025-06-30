@@ -60,35 +60,39 @@
 /**
  * Lists all folders in the user's Google Drive.
  */
-  function listDriveFolders() {
-    gapi.load('client', async () => {
-      await gapi.client.init({
-        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+/**
+ * Lists only top-level folders in the user's My Drive.
+ */
+function listTopLevelFolders() {
+  gapi.load('client', async () => {
+    await gapi.client.init({
+      discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+    });
+
+    gapi.client.setToken({ access_token: accessToken });
+
+    const response = await gapi.client.drive.files.list({
+      q: "mimeType = 'application/vnd.google-apps.folder' and 'root' in parents and trashed = false",
+      fields: 'files(id, name)',
+      pageSize: 50
+    });
+
+    const folders = response.result.files;
+    const list = document.getElementById('file-list');
+    list.innerHTML = '';
+
+    if (!folders || folders.length === 0) {
+      list.innerHTML = '<li>No top-level folders found.</li>';
+    } else {
+      folders.forEach(folder => {
+        const li = document.createElement('li');
+        li.textContent = `📁 ${folder.name} (${folder.id})`;
+        list.appendChild(li);
       });
+    }
+  });
+}
 
-      gapi.client.setToken({ access_token: accessToken });
-
-      const response = await gapi.client.drive.files.list({
-        q: "mimeType='application/vnd.google-apps.folder' and trashed = false and spaces='drive'",
-        fields: 'files(id, name)',
-        pageSize: 20
-      });
-
-      const folders = response.result.files;
-      const list = document.getElementById('file-list');
-      list.innerHTML = '';
-
-      if (!folders || folders.length === 0) {
-        list.innerHTML = '<li>No folders found.</li>';
-      } else {
-        folders.forEach(folder => {
-          const li = document.createElement('li');
-          li.textContent = `📁 ${folder.name} (${folder.id})`;
-          list.appendChild(li);
-        });
-      }
-    }); 
-  }
 
     /**
      * Loads Google Drive API and lists user's files.
