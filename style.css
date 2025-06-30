@@ -2,6 +2,9 @@
       font-family: Arial, sans-serif;
       padding: 20px;
     }
+    #login-div {
+      width: 50px;
+    }
     #content {
       display: none;
       margin-top: 30px;
