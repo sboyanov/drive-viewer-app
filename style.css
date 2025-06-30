@@ -13,3 +13,16 @@
       padding: 10px 15px;
       font-size: 16px;
     }
+
+    ul.folder {
+  list-style-type: none;
+  padding-left: 20px;
+}
+
+li.folder-item {
+  cursor: pointer;
+  margin: 4px 0;
+}
+li.folder-item span {
+  user-select: none;
+}

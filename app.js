@@ -42,28 +42,10 @@
       // Optional: decode response.credential to inspect ID token.
       tokenClient.requestAccessToken(); // OAuth2 token for Drive API
   }
-  /*
-  function getSpecificFolder () {
-    gapi.load('client', async () => {
-      await gapi.client.init({
-        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-      });
-    
-    gapi.client.setToken({ access_token: accessToken });
-    const response = await gapi.client.drive.files.list({
-        q: "mimeType='application/vnd.google-apps.folder' and trashed = false and spaces='drive'",
-        fields: 'files(id, name)',
-        pageSize: 20
-      });    
-  }
-      */
 /**
- * Lists all folders in the user's Google Drive.
+ * Entry point: Finds the folder named "Мария" in root and loads its children.
  */
-/**
- * Lists only top-level folders in the user's My Drive.
- */
-function listDriveFolders() {
+function loadMariaFolderTree() {
   gapi.load('client', async () => {
     await gapi.client.init({
       discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
@@ -71,57 +53,74 @@ function listDriveFolders() {
 
     gapi.client.setToken({ access_token: accessToken });
 
+    // Step 1: Find the folder "Мария" at top level
     const response = await gapi.client.drive.files.list({
-      q: "mimeType = 'application/vnd.google-apps.folder' and 'root' in parents and trashed = false",
+      q: "name = 'Мария' and mimeType = 'application/vnd.google-apps.folder' and 'root' in parents and trashed = false",
       fields: 'files(id, name)',
-      pageSize: 50
     });
 
-    const folders = response.result.files;
-    const list = document.getElementById('file-list');
-    list.innerHTML = '';
+    const folder = response.result.files?.[0];
 
-    if (!folders || folders.length === 0) {
-      list.innerHTML = '<li>No top-level folders found.</li>';
-    } else {
-      folders.forEach(folder => {
-        const li = document.createElement('li');
-        li.textContent = `📁 ${folder.name} (${folder.id})`;
-        list.appendChild(li);
-      });
+    if (!folder) {
+      document.getElementById('tree-root').innerHTML = '<li>Folder "Мария" not found.</li>';
+      return;
     }
+
+    // Step 2: Add "Мария" folder to tree
+    const treeRoot = document.getElementById('tree-root');
+    treeRoot.innerHTML = ''; // clear old content
+    const li = createFolderListItem(folder.name, folder.id);
+    treeRoot.appendChild(li);
   });
 }
 
+/**
+ * Creates a <li> element for a folder, and loads children on first click.
+ */
+function createFolderListItem(name, folderId) {
+  const li = document.createElement('li');
+  li.className = 'folder-item';
 
-    /**
-     * Loads Google Drive API and lists user's files.
-    
-    function listDriveFiles() {
-      gapi.load('client', async () => {
-        await gapi.client.init({
-          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+  const span = document.createElement('span');
+  span.textContent = `📁 ${name}`;
+  li.appendChild(span);
+
+  const ul = document.createElement('ul');
+  ul.className = 'folder';
+  ul.style.display = 'none';
+  li.appendChild(ul);
+
+  let loaded = false;
+
+  span.addEventListener('click', async () => {
+    ul.style.display = ul.style.display === 'none' ? 'block' : 'none';
+
+    if (!loaded && ul.style.display === 'block') {
+      const children = await getSubfolders(folderId);
+      if (children.length === 0) {
+        const empty = document.createElement('li');
+        empty.textContent = '(No subfolders)';
+        ul.appendChild(empty);
+      } else {
+        children.forEach(child => {
+          ul.appendChild(createFolderListItem(child.name, child.id));
         });
+      }
+      loaded = true;
+    }
+  });
 
-        gapi.client.setToken({ access_token: accessToken });
+  return li;
+}
 
-        const response = await gapi.client.drive.files.list({
-          pageSize: 10,
-          fields: 'files(id, name)',
-        });
-
-        const files = response.result.files;
-        const list = document.getElementById('file-list');
-        list.innerHTML = '';
-
-        if (!files || files.length === 0) {
-          list.innerHTML = '<li>No files found.</li>';
-        } else {
-          files.forEach(file => {
-            const li = document.createElement('li');
-            li.textContent = `${file.name} (${file.id})`;
-            list.appendChild(li);
-          });
-        }
-      });
-    } */
+/**
+ * Lists subfolders for a given folder ID.
+ */
+async function getSubfolders(parentId) {
+  const res = await gapi.client.drive.files.list({
+    q: `'${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    fields: 'files(id, name)',
+    pageSize: 50
+  });
+  return res.result.files;
+}
