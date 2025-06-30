@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Google Drive Integration</title>
+  <title>Google Drive Embedded Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -24,29 +24,44 @@
 </head>
 <body>
   <h1>Google Drive App</h1>
-  <div id="login-div"></div>
+  <div id="login-div">
+    <div id="g_id_signin"></div>
+  </div>
   <div id="content">
-    <p>You're signed in.</p>
+    <p>You are signed in.</p>
     <button onclick="listDriveFiles()">List My Drive Files</button>
     <ul id="file-list"></ul>
   </div>
 
-  <!-- Google Identity Services (modern Google Sign-In) -->
+  <!-- Google Identity Services (GIS) script -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <!-- Google API Client for Drive -->
   <script src="https://apis.google.com/js/api.js" async defer></script>
 
   <script>
-    const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'; // Replace with your actual client ID
+    const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'; // Replace this
     const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly';
 
     let tokenClient;
     let accessToken = null;
 
     /**
-     * Initialize the Google Identity Services client.
+     * On load: Initialize Sign-In button and token client.
      */
     window.onload = () => {
+      // Render the embedded Sign-In button
+      google.accounts.id.initialize({
+        client_id: CLIENT_ID,
+        callback: handleIdToken, // triggered after user selects account
+        auto_select: false,
+        ux_mode: 'popup'
+      });
+
+      google.accounts.id.renderButton(
+        document.getElementById('g_id_signin'),
+        { theme: 'outline', size: 'large' }
+      );
+
+      // Prepare OAuth token client (for Drive API access)
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
@@ -58,37 +73,25 @@
           accessToken = tokenResponse.access_token;
           document.getElementById('login-div').style.display = 'none';
           document.getElementById('content').style.display = 'block';
-        },
+        }
       });
-
-      // Render the Sign-In button
-      google.accounts.id.initialize({
-        client_id: CLIENT_ID,
-        callback: handleCredentialResponse
-      });
-
-      google.accounts.id.renderButton(
-        document.getElementById('login-div'),
-        { theme: 'outline', size: 'large' }
-      );
     };
 
     /**
-     * Handles credential response from Google Sign-In button.
-     * Triggers OAuth2 token request.
+     * After user selects account, request access token.
+     * This does not reload or redirect.
      */
-    function handleCredentialResponse(response) {
-      // Optional: decode ID token to get user info
-      tokenClient.requestAccessToken();
+    function handleIdToken(response) {
+      // Optional: decode response.credential to inspect ID token.
+      tokenClient.requestAccessToken(); // OAuth2 token for Drive API
     }
 
     /**
-     * Loads the Google Drive API client library and lists files.
+     * Loads Google Drive API and lists user's files.
      */
     function listDriveFiles() {
       gapi.load('client', async () => {
         await gapi.client.init({
-          apiKey: '', // Optional if you're only using OAuth2
           discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
         });
 
