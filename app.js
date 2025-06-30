@@ -30,6 +30,7 @@
           accessToken = tokenResponse.access_token;
           document.getElementById('login-div').style.display = 'none';
           document.getElementById('content').style.display = 'block';
+          loadMariaSubfoldersTree(); // 👈 load tree immediately
         }
       });
     };
@@ -43,9 +44,9 @@
       tokenClient.requestAccessToken(); // OAuth2 token for Drive API
   }
 /**
- * Entry point: Finds the folder named "Мария" in root and loads its children.
+ * Entry point after login: Load the folder tree below "Мария".
  */
-function loadMariaFolderTree() {
+function loadMariaSubfoldersTree() {
   gapi.load('client', async () => {
     await gapi.client.init({
       discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
@@ -53,29 +54,36 @@ function loadMariaFolderTree() {
 
     gapi.client.setToken({ access_token: accessToken });
 
-    // Step 1: Find the folder "Мария" at top level
+    // Find folder "Мария"
     const response = await gapi.client.drive.files.list({
       q: "name = 'Мария' and mimeType = 'application/vnd.google-apps.folder' and 'root' in parents and trashed = false",
       fields: 'files(id, name)',
     });
 
-    const folder = response.result.files?.[0];
+    const maria = response.result.files?.[0];
 
-    if (!folder) {
-      document.getElementById('tree-root').innerHTML = '<li>Folder "Мария" not found.</li>';
+    if (!maria) {
+      document.getElementById('tree-root').innerHTML = '<li>"Мария" folder not found.</li>';
       return;
     }
 
-    // Step 2: Add "Мария" folder to tree
-    const treeRoot = document.getElementById('tree-root');
-    treeRoot.innerHTML = ''; // clear old content
-    const li = createFolderListItem(folder.name, folder.id);
-    treeRoot.appendChild(li);
+    // Load children folders under "Мария" and render them as top-level items
+    const children = await getSubfolders(maria.id);
+    const rootList = document.getElementById('tree-root');
+    rootList.innerHTML = '';
+
+    if (children.length === 0) {
+      rootList.innerHTML = '<li>(No subfolders)</li>';
+    } else {
+      children.forEach(child => {
+        rootList.appendChild(createFolderListItem(child.name, child.id));
+      });
+    }
   });
 }
 
 /**
- * Creates a <li> element for a folder, and loads children on first click.
+ * Creates a <li> folder item with lazy-loading of its subfolders.
  */
 function createFolderListItem(name, folderId) {
   const li = document.createElement('li');
@@ -114,7 +122,7 @@ function createFolderListItem(name, folderId) {
 }
 
 /**
- * Lists subfolders for a given folder ID.
+ * Get subfolders under a given folder ID.
  */
 async function getSubfolders(parentId) {
   const res = await gapi.client.drive.files.list({

@@ -13,13 +13,16 @@
   <div id="login-div">
     <div id="g_id_signin"></div>
   </div>
-  <div id="content">
-    <p>You are signed in.</p>
-    <button onclick="loadMariaFolderTree()">Load 'Мария' Folder Tree</button>
-    <div id="folder-tree">
-      <h3>📂 Folder Tree Starting from: "Мария"</h3>
+<div id="content" style="display:none;">
+  <div id="main-container">
+    <aside id="sidebar">
+      <h3>📁 Folder Tree</h3>
       <ul id="tree-root"></ul>
-    </div>
+    </aside>
+    <section id="viewer">
+      <iframe id="file-frame" src="" frameborder="0"></iframe>
+    </section>
   </div>
+</div>
 </body>
 </html>
