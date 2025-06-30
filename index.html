@@ -2,6 +2,9 @@
 <html>
 <head>
   <title>Google Drive Viewer</title>
+  <script src="https://apis.google.com/js/api.js?onload=onGapiLoad" async defer></script>
+  <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()" async defer></script>
+  <script src="app.js"></script>
   <link rel="stylesheet" href="style.css">
   <style>
     body {
@@ -21,13 +24,16 @@
     }
   </style>
 </head>
-<script src="https://apis.google.com/js/api.js?onload=onGapiLoad" async defer></script>
 <body>
     <div id="topbar">
-        <input id="clickMe" type="button" value="clickme" onclick="onGapiLoad();" />
+        <input id="clickMe" type="button" value="clickme" onclick="doFunction();" />
     </div>
   <div id="sidebar">Google Drive Sidebar Placeholder</div>
   <iframe id="viewer" src=""></iframe>
-  <script src="app.js"></script>
+  <script>
+  function gapiLoaded() {
+    gapi.load('client', initializeGapiClient);
+  }
+</script>
 </body>
 </html>
