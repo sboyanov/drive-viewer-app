@@ -1,26 +1,19 @@
-// Replace this with your actual OAuth 2.0 client ID from Google Cloud Console
 const CLIENT_ID = '862215580889-v7lu8b32b3rd6003butt1rjbtk0e9i2d.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
-// These two variables track when both GIS and GAPI are initialized
-let tokenClient;   // Will be initialized with GIS
+
+let tokenClient;   
 let gapiInited = false;
 let gisInited = false;
 
-/**
- * Called automatically when the Google API script (`gapi.js`) finishes loading.
- * It loads the Drive API client configuration (discovery doc).
- */
+
 function gapiLoaded() {
-  console.log('123');
-  //gapi.load('client', initializeGapiClient);
+  console.log('gapiLoaded');
+  gapi.load('client', initializeGapiClient);
 }
 
-/**
- * Initializes the Google API client by loading the Drive API definitions.
- * Once done, marks `gapiInited` and tries to start the auth process.
- */
 function initializeGapiClient() {
+  console.log('initializeGapiClient');
   gapi.client.init({
     discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
   }).then(() => {
@@ -29,11 +22,8 @@ function initializeGapiClient() {
   });
 }
 
-/**
- * Called automatically when the full page is loaded.
- * This initializes the GIS token client which handles OAuth.
- */
 window.onload = () => {
+  console.log('OnLoad');
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
@@ -49,21 +39,15 @@ window.onload = () => {
   maybeEnableAuth();
 };
 
-/**
- * When both the Google API and Identity Services are ready,
- * this requests the access token, which will trigger the consent popup.
- */
 function maybeEnableAuth() {
+  console.log('maybeEnableAuth');
   if (gapiInited && gisInited) {
     tokenClient.requestAccessToken();
   }
 }
 
-/**
- * Calls the Drive API to list the user's files.
- * Displays them in the sidebar and loads selected file in the iframe.
- */
 function listFiles() {
+  console.log('ListFiles');
   gapi.client.drive.files.list({
     pageSize: 10,
     fields: "files(id, name, mimeType, webViewLink)"
@@ -94,10 +78,8 @@ function listFiles() {
   });
 }
 
-/**
- * Updates the text at the top of the sidebar (login status or loading messages).
- */
 function updateStatus(msg) {
+  console.log('updateStatus');
   const status = document.getElementById('loginStatus');
   if (status) status.textContent = msg;
 }
