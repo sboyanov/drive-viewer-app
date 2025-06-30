@@ -18,11 +18,12 @@ function initializeGapiClient() {
     discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
   }).then(() => {
     gapiInited = true;
-    maybeEnableAuth();
+    //maybeEnableAuth();
+    function onload();
   });
 }
 
-window.onload = () => {
+function onload()  {
   console.log('OnLoad');
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
@@ -34,7 +35,6 @@ window.onload = () => {
       listFiles();
     },
   });
-
   gisInited = true;
   maybeEnableAuth();
 };
