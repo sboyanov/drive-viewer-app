@@ -2,6 +2,7 @@ const CLIENT_ID = '862215580889-v7lu8b32b3rd6003butt1rjbtk0e9i2d.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
 function onGapiLoad() {
+    console.log('test');
   gapi.load('client:auth2', initClient);
 }
 
