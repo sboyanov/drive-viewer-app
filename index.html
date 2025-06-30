@@ -1,39 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Google Drive Viewer</title>
-  <script src="https://apis.google.com/js/api.js?onload=onGapiLoad" async defer></script>
-  <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()" async defer></script>
-  <script src="app.js"></script>
-  <link rel="stylesheet" href="style.css">
   <style>
-    body {
+        body {
       margin: 0;
       display: flex;
       height: 100vh;
+      font-family: sans-serif;
     }
     #sidebar {
       width: 300px;
       background-color: #f0f0f0;
       overflow-y: auto;
       padding: 10px;
+      border-right: 1px solid #ccc;
     }
     #viewer {
       flex-grow: 1;
       border: none;
     }
+    #loginStatus {
+      font-size: 0.9em;
+      color: gray;
+      padding: 8px;
+    }
   </style>
 </head>
 <body>
-    <div id="topbar">
-        <input id="clickMe" type="button" value="clickme" onclick="doFunction();" />
-    </div>
-  <div id="sidebar">Google Drive Sidebar Placeholder</div>
+
+  <div id="sidebar">
+    <div id="loginStatus">Authorizing Google...</div>
+  </div>
   <iframe id="viewer" src=""></iframe>
-  <script>
-  function gapiLoaded() {
-    gapi.load('client', initializeGapiClient);
-  }
-</script>
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Google API Client -->
+  <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()" async defer></script>
+
+  <!-- Your JS logic -->
+  <script src="app.js"></script>
+
 </body>
 </html>
