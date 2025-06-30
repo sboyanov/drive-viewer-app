@@ -1,95 +1,45 @@
-const CLIENT_ID = '862215580889-v7lu8b32b3rd6003butt1rjbtk0e9i2d.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+    // Replace this with your own Google OAuth 2.0 Web Client ID
+    const CLIENT_ID = '862215580889-v7lu8b32b3rd6003butt1rjbtk0e9i2d.apps.googleusercontent.com';
 
+    // This runs once the GIS library has loaded
+    window.onload = () => {
+      // Initialize the Google Identity Service client
+      google.accounts.id.initialize({
+        client_id: CLIENT_ID,
+        callback: handleCredentialResponse, // called after successful login
+        auto_select: false, // Don't auto-select previously signed-in user
+        ux_mode: 'popup' // Use 'popup' for traditional login or 'redirect' for full-page
+      });
 
-let tokenClient;   
-let gapiInited = false;
-let gisInited = false;
+      // Render the Sign-In button directly into the page
+      google.accounts.id.renderButton(
+        document.getElementById('g_id_signin'),
+        {
+          theme: 'outline',
+          size: 'large',
+          type: 'standard',
+          shape: 'pill'
+        }
+      );
+    };
 
+    /**
+     * Called when the user successfully signs in.
+     * Receives a Google ID token (JWT), which contains user info.
+     */
+    function handleCredentialResponse(response) {
+      const jwt = response.credential;
 
-function gapiLoaded() {
-  console.log('gapiLoaded');
-  gapi.load('client', initializeGapiClient);
-}
+      // Decode the ID token to extract basic user info
+      const payload = JSON.parse(atob(jwt.split('.')[1]));
 
-function initializeGapiClient() {
-  console.log('initializeGapiClient');
-  gapi.client.init({
-    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-  }).then(() => {
-    gapiInited = true;
-    //maybeEnableAuth();
-    iTokenClient ();
-  });
-}
+      // Display user info on the page
+      document.getElementById('user-info').innerHTML = `
+        <p><strong>Signed in as:</strong> ${payload.name}</p>
+        <p><strong>Email:</strong> ${payload.email}</p>
+        <img src="${payload.picture}" alt="User Picture" style="border-radius:50%; margin-top:10px;">
+      `;
 
-function iTokenClient () {
-  console.log('OnLoad');
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: (tokenResponse) => {
-      // Once the user authorizes, the token is passed here 123
-      gapi.client.setToken(tokenResponse);
-      //listFiles();
-    },
-  });
-  gisInited = true;
-  maybeEnableAuth();
-}
-/*
-window.onload = () => {
-  console.log('OnLoad');
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: (tokenResponse) => {
-      // Once the user authorizes, the token is passed here 123
-      gapi.client.setToken(tokenResponse);
-      updateStatus("Loading Drive files...");
-      listFiles();
-    },
-  });
-  gisInited = true;
-  maybeEnableAuth();
-};
-*/
-function maybeEnableAuth() {
-  console.log('maybeEnableAuth');
-  if (gapiInited && gisInited) {
-    tokenClient.requestAccessToken();
-  }
-}
-/*
-function listFiles() {
-  console.log('ListFiles');
-  gapi.client.drive.files.list({
-    pageSize: 10,
-    fields: "files(id, name, mimeType, webViewLink)"
-  }).then(response => {
-    const files = response.result.files;
-    const sidebar = document.getElementById('sidebar');
-    sidebar.innerHTML = '<div id="loginStatus">Files:</div>';
-
-    if (!files || files.length === 0) {
-      sidebar.innerHTML += '<div>No files found.</div>';
-      return;
+      // You can now use the ID token to authenticate requests to your server or call Google APIs
+      console.log("ID Token: ", jwt);
     }
-
-    files.forEach(file => {
-      const div = document.createElement('div');
-      div.textContent = file.name;
-      div.style.cursor = 'pointer';
-      div.style.padding = '6px 0';
-      div.onclick = () => {
-        // Show the file in the iframe using its webViewLink
-        document.getElementById('viewer').src = file.webViewLink;
-      };
-      sidebar.appendChild(div);
-    });
-  }).catch(error => {
-    updateStatus("Failed to list files: " + error.message);
-    console.error(error);
-  });
-}
-  */
