@@ -63,7 +63,7 @@
 /**
  * Lists only top-level folders in the user's My Drive.
  */
-function listTopLevelFolders() {
+function listDriveFolders() {
   gapi.load('client', async () => {
     await gapi.client.init({
       discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
