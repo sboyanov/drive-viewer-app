@@ -1,45 +1,79 @@
-    // Replace this with your own Google OAuth 2.0 Web Client ID
-    const CLIENT_ID = '862215580889-v7lu8b32b3rd6003butt1rjbtk0e9i2d.apps.googleusercontent.com';
+    const CLIENT_ID = '862215580889-v7lu8b32b3rd6003butt1rjbtk0e9i2d.apps.googleusercontent.com'; // Replace this
+    const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly';
 
-    // This runs once the GIS library has loaded
+    let tokenClient;
+    let accessToken = null;
+
+    /**
+     * On load: Initialize Sign-In button and token client.
+     */
     window.onload = () => {
-      // Initialize the Google Identity Service client
+      // Render the embedded Sign-In button
       google.accounts.id.initialize({
         client_id: CLIENT_ID,
-        callback: handleCredentialResponse, // called after successful login
-        auto_select: false, // Don't auto-select previously signed-in user
-        ux_mode: 'popup' // Use 'popup' for traditional login or 'redirect' for full-page
+        callback: handleIdToken, // triggered after user selects account
+        auto_select: false,
+        ux_mode: 'popup'
       });
 
-      // Render the Sign-In button directly into the page
       google.accounts.id.renderButton(
         document.getElementById('g_id_signin'),
-        {
-          theme: 'outline',
-          size: 'large',
-          type: 'standard',
-          shape: 'pill'
-        }
+        { theme: 'outline', size: 'large' }
       );
+
+      // Prepare OAuth token client (for Drive API access)
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (tokenResponse) => {
+          if (tokenResponse.error) {
+            console.error(tokenResponse);
+            return;
+          }
+          accessToken = tokenResponse.access_token;
+          document.getElementById('login-div').style.display = 'none';
+          document.getElementById('content').style.display = 'block';
+        }
+      });
     };
 
     /**
-     * Called when the user successfully signs in.
-     * Receives a Google ID token (JWT), which contains user info.
+     * After user selects account, request access token.
+     * This does not reload or redirect.
      */
-    function handleCredentialResponse(response) {
-      const jwt = response.credential;
+    function handleIdToken(response) {
+      // Optional: decode response.credential to inspect ID token.
+      tokenClient.requestAccessToken(); // OAuth2 token for Drive API
+    }
 
-      // Decode the ID token to extract basic user info
-      const payload = JSON.parse(atob(jwt.split('.')[1]));
+    /**
+     * Loads Google Drive API and lists user's files.
+     */
+    function listDriveFiles() {
+      gapi.load('client', async () => {
+        await gapi.client.init({
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+        });
 
-      // Display user info on the page
-      document.getElementById('user-info').innerHTML = `
-        <p><strong>Signed in as:</strong> ${payload.name}</p>
-        <p><strong>Email:</strong> ${payload.email}</p>
-        <img src="${payload.picture}" alt="User Picture" style="border-radius:50%; margin-top:10px;">
-      `;
+        gapi.client.setToken({ access_token: accessToken });
 
-      // You can now use the ID token to authenticate requests to your server or call Google APIs
-      console.log("ID Token: ", jwt);
+        const response = await gapi.client.drive.files.list({
+          pageSize: 10,
+          fields: 'files(id, name)',
+        });
+
+        const files = response.result.files;
+        const list = document.getElementById('file-list');
+        list.innerHTML = '';
+
+        if (!files || files.length === 0) {
+          list.innerHTML = '<li>No files found.</li>';
+        } else {
+          files.forEach(file => {
+            const li = document.createElement('li');
+            li.textContent = `${file.name} (${file.id})`;
+            list.appendChild(li);
+          });
+        }
+      });
     }
