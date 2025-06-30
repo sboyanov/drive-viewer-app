@@ -31,12 +31,12 @@ function iTokenClient () {
     callback: (tokenResponse) => {
       // Once the user authorizes, the token is passed here 123
       gapi.client.setToken(tokenResponse);
-      updateStatus("Loading Drive files...");
       listFiles();
     },
   });
   gisInited = true;
   maybeEnableAuth();
+}
 /*
 window.onload = () => {
   console.log('OnLoad');
@@ -60,7 +60,7 @@ function maybeEnableAuth() {
     tokenClient.requestAccessToken();
   }
 }
-
+/*
 function listFiles() {
   console.log('ListFiles');
   gapi.client.drive.files.list({
@@ -92,9 +92,4 @@ function listFiles() {
     console.error(error);
   });
 }
-
-function updateStatus(msg) {
-  console.log('updateStatus');
-  const status = document.getElementById('loginStatus');
-  if (status) status.textContent = msg;
-}
+  */
