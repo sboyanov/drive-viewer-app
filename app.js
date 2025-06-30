@@ -11,11 +11,14 @@ function initClient() {
     scope: SCOPES
   }).then(() => {
     const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+    console.log("Signed in?", isSignedIn);
     if (!isSignedIn) {
       gapi.auth2.getAuthInstance().signIn().then(listFiles);
     } else {
       listFiles();
     }
+  }).catch(error => {
+    console.error("Failed to initialize gapi client", error);
   });
 }
 
